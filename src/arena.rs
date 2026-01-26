@@ -46,6 +46,7 @@ pub enum ArenaEvent<T> {
 }
 
 /// Arena - Manages a multiplayer game room over Nostr
+#[derive(Clone)]
 pub struct Arena<T> {
     config: ArenaConfig,
     client: Arc<NostrClient>,
