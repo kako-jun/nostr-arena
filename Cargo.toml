@@ -1,23 +1,26 @@
-[workspace]
-resolver = "2"
-members = [
-    "crates/nostr-arena-core",
-    "bindings/wasm",
-    "examples/rust-tui",
-]
-
-[workspace.package]
+[package]
+name = "nostr-arena"
 version = "0.2.0"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/kako-jun/nostr-arena"
 authors = ["kako-jun <ppdg85ae99aaq2q2@gmail.com>"]
+description = "Nostr-based real-time multiplayer game arena. No server required."
+keywords = ["nostr", "multiplayer", "game", "p2p", "realtime"]
+categories = ["games", "network-programming"]
 
-[workspace.dependencies]
-nostr-arena-core = { path = "crates/nostr-arena-core" }
+[dependencies]
 nostr-sdk = "0.38"
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
 tracing = "0.1"
+rand = "0.8"
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[[example]]
+name = "tui"
+path = "examples/tui.rs"

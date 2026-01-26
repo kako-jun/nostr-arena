@@ -10,6 +10,7 @@ Build multiplayer games that run over the decentralized Nostr network. Works wit
 - **Multi-player** - Support for 2+ players per room
 - **Presence Tracking** - Real-time player join/leave/heartbeat
 - **Start Modes** - Auto, Ready, Countdown, or Host-controlled game start
+- **QR Code** - Generate QR codes for easy room sharing
 - **Cross-platform** - Rust core with bindings for npm (WASM) and PyPI
 
 ## Installation
@@ -211,6 +212,28 @@ for (const room of rooms) {
 | `ready` | Game starts when all players send ready signal |
 | `countdown` | Countdown starts when all players ready |
 | `host` | Host manually starts the game |
+
+## QR Code
+
+Generate QR codes for easy room sharing:
+
+```rust
+// Rust
+let svg = arena.get_room_qr_svg(None).await;
+let data_url = arena.get_room_qr_data_url(None).await;
+```
+
+```python
+# Python
+svg = arena.get_room_qr_svg()
+data_url = arena.get_room_qr_data_url()
+```
+
+```typescript
+// JavaScript
+const svg = await arena.getRoomQRSvg();
+const dataUrl = await arena.getRoomQRDataUrl();
+```
 
 ## Configuration
 

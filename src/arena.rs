@@ -590,6 +590,18 @@ where
         }
     }
 
+    /// Get room QR code as SVG
+    pub async fn get_room_qr_svg(&self, options: Option<crate::qr::QrOptions>) -> Option<String> {
+        let url = self.get_room_url().await?;
+        crate::qr::generate_qr_svg(&url, &options.unwrap_or_default()).ok()
+    }
+
+    /// Get room QR code as data URL
+    pub async fn get_room_qr_data_url(&self, options: Option<crate::qr::QrOptions>) -> Option<String> {
+        let url = self.get_room_url().await?;
+        crate::qr::generate_qr_data_url(&url, &options.unwrap_or_default()).ok()
+    }
+
     // =========================================================================
     // Private: Event Handling
     // =========================================================================

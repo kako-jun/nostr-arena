@@ -1,6 +1,6 @@
 //! Simple TUI example for nostr-arena
 
-use nostr_arena_core::{Arena, ArenaConfig, ArenaEvent, StartMode};
+use nostr_arena::{Arena, ArenaConfig, ArenaEvent, StartMode};
 use serde::{Deserialize, Serialize};
 use std::io::{self, Write};
 

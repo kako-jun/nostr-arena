@@ -1,4 +1,4 @@
-//! # nostr-arena-core
+//! # nostr-arena
 //!
 //! Nostr-based real-time multiplayer game arena. No server required.
 //!
@@ -8,12 +8,12 @@
 //! - **Presence Tracking**: Track multiple players in a room
 //! - **Start Modes**: Auto, Ready, Countdown, or Host-controlled
 //! - **Game State Sync**: Real-time state synchronization
-//! - **Reconnection**: Automatic reconnection support
+//! - **QR Code**: Generate QR codes for room sharing
 //!
 //! ## Example
 //!
 //! ```rust,ignore
-//! use nostr_arena_core::{Arena, ArenaConfig, ArenaEvent};
+//! use nostr_arena::{Arena, ArenaConfig, ArenaEvent, StartMode};
 //! use serde::{Serialize, Deserialize};
 //!
 //! #[derive(Clone, Serialize, Deserialize)]
@@ -31,11 +31,9 @@
 //!     let arena: Arena<GameState> = Arena::new(config).await?;
 //!     arena.connect().await?;
 //!
-//!     // Create a room
 //!     let url = arena.create().await?;
 //!     println!("Share this URL: {}", url);
 //!
-//!     // Wait for events
 //!     while let Some(event) = arena.recv().await {
 //!         match event {
 //!             ArenaEvent::PlayerJoin(player) => {
@@ -43,9 +41,6 @@
 //!             }
 //!             ArenaEvent::GameStart => {
 //!                 println!("Game started!");
-//!             }
-//!             ArenaEvent::PlayerState { pubkey, state } => {
-//!                 println!("Player {} score: {}", pubkey, state.score);
 //!             }
 //!             _ => {}
 //!         }
@@ -58,9 +53,11 @@
 pub mod arena;
 pub mod client;
 pub mod error;
+pub mod qr;
 pub mod types;
 
 pub use arena::{Arena, ArenaEvent};
 pub use client::NostrClient;
 pub use error::{ArenaError, Result};
+pub use qr::{generate_qr_data_url, generate_qr_svg, QrOptions};
 pub use types::*;
