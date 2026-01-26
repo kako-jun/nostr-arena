@@ -280,9 +280,16 @@ pub fn generate_room_id() -> String {
 }
 
 /// Current time in milliseconds
+#[cfg(not(target_arch = "wasm32"))]
 pub fn now_ms() -> u64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_millis() as u64
+}
+
+/// Current time in milliseconds (WASM version)
+#[cfg(target_arch = "wasm32")]
+pub fn now_ms() -> u64 {
+    js_sys::Date::now() as u64
 }

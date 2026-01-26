@@ -55,6 +55,7 @@ pub mod client;
 pub mod error;
 pub mod qr;
 pub mod spawn;
+pub mod time;
 pub mod types;
 
 #[cfg(test)]

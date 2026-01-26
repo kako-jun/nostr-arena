@@ -3,13 +3,13 @@
 use crate::client::NostrClient;
 use crate::error::{ArenaError, Result};
 use crate::spawn::spawn;
+use crate::time::{Duration, interval, sleep};
 use crate::types::*;
 use serde::{Serialize, de::DeserializeOwned};
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::sync::Arc;
 use tokio::sync::{RwLock, mpsc};
-use tokio::time::{Duration, interval};
 use tracing::{info, warn};
 
 /// Arena events emitted to the application
@@ -383,9 +383,9 @@ where
         let tag = room_tag.clone();
         let content = join_content.clone();
         spawn(async move {
-            tokio::time::sleep(Duration::from_millis(500)).await;
+            sleep(Duration::from_millis(500)).await;
             let _ = client.publish_ephemeral(&tag, &content).await;
-            tokio::time::sleep(Duration::from_millis(1000)).await;
+            sleep(Duration::from_millis(1000)).await;
             let _ = client.publish_ephemeral(&tag, &content).await;
         });
 
@@ -768,8 +768,7 @@ where
                                             let room_state_clone = room_state.clone();
                                             spawn(async move {
                                                 for remaining in (1..=secs).rev() {
-                                                    tokio::time::sleep(Duration::from_secs(1))
-                                                        .await;
+                                                    sleep(Duration::from_secs(1)).await;
                                                     let _ = event_tx_clone
                                                         .send(ArenaEvent::CountdownTick(
                                                             remaining - 1,
@@ -929,7 +928,7 @@ where
                 spawn(async move {
                     for i in (1..=secs).rev() {
                         let _ = event_tx.send(ArenaEvent::CountdownTick(i)).await;
-                        tokio::time::sleep(Duration::from_secs(1)).await;
+                        sleep(Duration::from_secs(1)).await;
                     }
                     room_state.write().await.status = RoomStatus::Playing;
                     let _ = event_tx.send(ArenaEvent::GameStart).await;
