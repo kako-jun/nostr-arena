@@ -56,6 +56,9 @@ pub mod error;
 pub mod qr;
 pub mod types;
 
+#[cfg(test)]
+mod tests;
+
 pub use arena::{Arena, ArenaEvent};
 pub use client::NostrClient;
 pub use error::{ArenaError, Result};

@@ -4,37 +4,45 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     nostr-arena-core (Rust)                 │
+│                     nostr-arena (Rust)                      │
 │                                                             │
 │  ┌─────────┐  ┌─────────────┐  ┌──────────┐  ┌──────────┐  │
 │  │  Arena  │──│ NostrClient │──│  Types   │──│  Error   │  │
 │  └─────────┘  └─────────────┘  └──────────┘  └──────────┘  │
-│       │              │                                      │
-│       └──────────────┼──────────────────────────────────────┤
-│                      │                                      │
-│              ┌───────┴───────┐                              │
-│              │   nostr-sdk   │                              │
-│              └───────────────┘                              │
+│       │              │              │              │        │
+│       └──────────────┼──────────────┼──────────────┘        │
+│                      │              │                       │
+│              ┌───────┴───────┐  ┌───┴───┐                   │
+│              │   nostr-sdk   │  │qrcode │                   │
+│              └───────────────┘  └───────┘                   │
 └─────────────────────────────────────────────────────────────┘
                            │
          ┌─────────────────┼─────────────────┐
          │                 │                 │
          ▼                 ▼                 ▼
-┌─────────────────┐ ┌─────────────┐ ┌─────────────────┐
-│  bindings/wasm  │ │bindings/py  │ │  Native Rust    │
-│  (wasm-pack)    │ │ (maturin)   │ │     Apps        │
-└─────────────────┘ └─────────────┘ └─────────────────┘
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│ nostr-arena-js  │ │nostr-arena-py   │ │  Native Rust    │
+│ (wasm-bindgen)  │ │    (PyO3)       │ │     Apps        │
+└─────────────────┘ └─────────────────┘ └─────────────────┘
          │                 │                 │
          ▼                 ▼                 ▼
-┌─────────────────┐ ┌─────────────┐ ┌─────────────────┐
-│   npm package   │ │ PyPI package│ │  Rust TUI/CLI   │
-│  (JavaScript)   │ │  (Python)   │ │     Games       │
-└─────────────────┘ └─────────────┘ └─────────────────┘
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│   npm package   │ │  PyPI package   │ │  Rust TUI/CLI   │
+│  (JavaScript)   │ │    (Python)     │ │     Games       │
+└─────────────────┘ └─────────────────┘ └─────────────────┘
 ```
+
+## Repositories
+
+| Repository | Description | Package |
+|------------|-------------|---------|
+| [nostr-arena](https://github.com/kako-jun/nostr-arena) | Rust core library | crates.io |
+| [nostr-arena-js](https://github.com/kako-jun/nostr-arena-js) | WASM bindings | npm |
+| [nostr-arena-python](https://github.com/kako-jun/nostr-arena-python) | Python bindings | PyPI |
 
 ## Components
 
-### nostr-arena-core
+### nostr-arena (Core)
 
 The core library written in Rust. Provides:
 
@@ -42,8 +50,9 @@ The core library written in Rust. Provides:
 - **NostrClient**: Nostr protocol handling via nostr-sdk
 - **Types**: Shared type definitions
 - **Error**: Error types
+- **QR**: QR code generation
 
-### bindings/wasm
+### nostr-arena-js
 
 WebAssembly bindings built with wasm-bindgen. Exports:
 
@@ -53,13 +62,13 @@ WebAssembly bindings built with wasm-bindgen. Exports:
 
 Built with `wasm-pack` for npm distribution.
 
-### bindings/python
+### nostr-arena-python
 
-Python bindings built with PyO3/maturin. Exports:
+Python bindings built with PyO3. Exports:
 
 - `Arena` class
 - `ArenaConfig` class
-- `ArenaEvent`, `PlayerPresence`, `RoomInfo` classes
+- Event dictionaries
 
 Built with `maturin` for PyPI distribution.
 
@@ -219,32 +228,66 @@ Host clicks start  ────────────────────�
 
 ## Directory Structure
 
+### nostr-arena (Core)
+
 ```
 nostr-arena/
-├── Cargo.toml                 # Workspace config
+├── Cargo.toml
 ├── README.md
-├── crates/
-│   └── nostr-arena-core/      # Rust core library
-│       ├── Cargo.toml
-│       └── src/
-│           ├── lib.rs
-│           ├── arena.rs       # Main Arena struct
-│           ├── client.rs      # NostrClient wrapper
-│           ├── types.rs       # Type definitions
-│           └── error.rs       # Error types
-├── bindings/
-│   ├── wasm/                  # npm WASM bindings
-│   │   ├── Cargo.toml
-│   │   └── src/lib.rs
-│   └── python/                # PyPI bindings
-│       ├── Cargo.toml
-│       ├── pyproject.toml
-│       └── src/lib.rs
+├── LICENSE
+├── .pre-commit-config.yaml
+├── .github/
+│   └── workflows/
+│       ├── ci.yml
+│       └── release.yml
+├── src/
+│   ├── lib.rs
+│   ├── arena.rs      # Main Arena struct
+│   ├── client.rs     # NostrClient wrapper
+│   ├── types.rs      # Type definitions
+│   ├── error.rs      # Error types
+│   ├── qr.rs         # QR code generation
+│   └── tests.rs      # Unit tests
 ├── examples/
-│   ├── rust-tui/              # Rust TUI example
-│   ├── pygame/                # Python game example
-│   └── web/                   # Browser example
+│   └── tui.rs        # TUI example
 └── docs/
-    ├── protocol.md            # Nostr protocol spec
-    └── architecture.md        # This file
+    ├── protocol.md
+    ├── api.md
+    └── architecture.md
+```
+
+### nostr-arena-js (npm)
+
+```
+nostr-arena-js/
+├── Cargo.toml
+├── README.md
+├── LICENSE
+├── .pre-commit-config.yaml
+├── .github/
+│   └── workflows/
+│       ├── ci.yml
+│       └── release.yml
+└── src/
+    └── lib.rs        # WASM bindings
+```
+
+### nostr-arena-python (PyPI)
+
+```
+nostr-arena-python/
+├── Cargo.toml
+├── pyproject.toml
+├── README.md
+├── LICENSE
+├── .pre-commit-config.yaml
+├── .github/
+│   └── workflows/
+│       ├── ci.yml
+│       └── release.yml
+├── src/
+│   └── lib.rs        # Python bindings
+└── python/
+    └── nostr_arena/
+        └── __init__.py
 ```
