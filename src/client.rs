@@ -1,6 +1,7 @@
 //! Nostr client wrapper
 
 use crate::error::{ArenaError, Result};
+use crate::spawn::spawn;
 use crate::types::kinds;
 use nostr_sdk::prelude::*;
 use std::sync::Arc;
@@ -194,7 +195,7 @@ impl NostrClient {
         let client = self.client.clone();
         let callback = Arc::new(callback);
 
-        tokio::spawn(async move {
+        spawn(async move {
             let mut notifications = client.notifications();
             while let Ok(notification) = notifications.recv().await {
                 if let RelayPoolNotification::Event { event, .. } = notification {

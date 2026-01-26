@@ -54,6 +54,7 @@ pub mod arena;
 pub mod client;
 pub mod error;
 pub mod qr;
+pub mod spawn;
 pub mod types;
 
 #[cfg(test)]

@@ -7,6 +7,7 @@ use serde::{de::DeserializeOwned, Serialize};
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::sync::Arc;
+use crate::spawn::spawn;
 use tokio::sync::{mpsc, RwLock};
 use tokio::time::{interval, Duration};
 use tracing::{info, warn};
@@ -374,7 +375,7 @@ where
         let client = self.client.clone();
         let tag = room_tag.clone();
         let content = join_content.clone();
-        tokio::spawn(async move {
+        spawn(async move {
             tokio::time::sleep(Duration::from_millis(500)).await;
             let _ = client.publish_ephemeral(&tag, &content).await;
             tokio::time::sleep(Duration::from_millis(1000)).await;
@@ -644,7 +645,7 @@ where
                     let event_tx = event_tx.clone();
                     let config = config.clone();
 
-                    tokio::spawn(async move {
+                    spawn(async move {
                         match content {
                             EventContent::Join(join) => {
                                 let now = now_ms();
@@ -739,7 +740,7 @@ where
                                             // Spawn countdown task
                                             let event_tx_clone = event_tx.clone();
                                             let room_state_clone = room_state.clone();
-                                            tokio::spawn(async move {
+                                            spawn(async move {
                                                 for remaining in (1..=secs).rev() {
                                                     tokio::time::sleep(Duration::from_secs(1)).await;
                                                     let _ = event_tx_clone.send(ArenaEvent::CountdownTick(remaining - 1)).await;
@@ -775,7 +776,7 @@ where
         let room_state = self.room_state.clone();
         let config = self.config.clone();
 
-        tokio::spawn(async move {
+        spawn(async move {
             let mut ticker = interval(Duration::from_millis(config.heartbeat_interval));
 
             loop {
@@ -806,7 +807,7 @@ where
         let config = self.config.clone();
         let event_tx = self.event_tx.clone();
 
-        tokio::spawn(async move {
+        spawn(async move {
             let mut ticker = interval(Duration::from_secs(30));
 
             loop {
@@ -890,7 +891,7 @@ where
                 let event_tx = self.event_tx.clone();
                 let room_state = self.room_state.clone();
 
-                tokio::spawn(async move {
+                spawn(async move {
                     for i in (1..=secs).rev() {
                         let _ = event_tx.send(ArenaEvent::CountdownTick(i)).await;
                         tokio::time::sleep(Duration::from_secs(1)).await;
