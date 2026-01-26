@@ -151,10 +151,10 @@ where
                 }
 
                 // Skip expired rooms
-                if let Some(expires_at) = content.expires_at {
-                    if now > expires_at {
-                        continue;
-                    }
+                if let Some(expires_at) = content.expires_at
+                    && now > expires_at
+                {
+                    continue;
                 }
 
                 // Apply status filter
