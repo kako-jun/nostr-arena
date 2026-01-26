@@ -9,18 +9,27 @@ description = "Nostr-based real-time multiplayer game arena. No server required.
 keywords = ["nostr", "multiplayer", "game", "p2p", "realtime"]
 categories = ["games", "network-programming"]
 
+[features]
+default = ["native"]
+native = ["tokio/full", "nostr-sdk/all-nips"]
+wasm = ["nostr-sdk/nip04", "nostr-sdk/nip44", "getrandom/js"]
+
 [dependencies]
-nostr-sdk = "0.38"
-tokio = { version = "1", features = ["full"] }
+nostr-sdk = { version = "0.38", default-features = false }
+tokio = { version = "1", default-features = false, features = ["sync", "macros", "rt"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
 tracing = "0.1"
 rand = "0.8"
 qrcode = "0.14"
+getrandom = { version = "0.2", optional = true }
 
 [dev-dependencies]
 tokio-test = "0.4"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1", features = ["full"] }
 
 [[example]]
 name = "tui"
