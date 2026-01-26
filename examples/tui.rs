@@ -79,12 +79,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let arg = parts.get(1).copied().unwrap_or("");
 
         match cmd {
-            "c" => {
-                match arena.create().await {
-                    Ok(url) => println!("Room created! URL: {}", url),
-                    Err(e) => println!("Failed to create room: {}", e),
-                }
-            }
+            "c" => match arena.create().await {
+                Ok(url) => println!("Room created! URL: {}", url),
+                Err(e) => println!("Failed to create room: {}", e),
+            },
             "j" => {
                 if arg.is_empty() {
                     println!("Usage: j <room_id>");

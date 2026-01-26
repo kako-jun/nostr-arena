@@ -2,14 +2,14 @@
 
 use crate::client::NostrClient;
 use crate::error::{ArenaError, Result};
+use crate::spawn::spawn;
 use crate::types::*;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::sync::Arc;
-use crate::spawn::spawn;
-use tokio::sync::{mpsc, RwLock};
-use tokio::time::{interval, Duration};
+use tokio::sync::{RwLock, mpsc};
+use tokio::time::{Duration, interval};
 use tracing::{info, warn};
 
 /// Arena events emitted to the application
@@ -169,7 +169,11 @@ where
                     .tags
                     .iter()
                     .find_map(|tag| {
-                        if tag.kind() == nostr_sdk::TagKind::SingleLetter(nostr_sdk::SingleLetterTag::lowercase(nostr_sdk::Alphabet::D)) {
+                        if tag.kind()
+                            == nostr_sdk::TagKind::SingleLetter(
+                                nostr_sdk::SingleLetterTag::lowercase(nostr_sdk::Alphabet::D),
+                            )
+                        {
                             tag.content().map(|s| {
                                 s.strip_prefix(&format!("{game_id}-"))
                                     .unwrap_or(s)
@@ -300,8 +304,8 @@ where
             .await?
             .ok_or(ArenaError::RoomNotFound)?;
 
-        let content: RoomEventContent =
-            serde_json::from_str(&event.content).map_err(|e| ArenaError::InvalidRoomData(e.to_string()))?;
+        let content: RoomEventContent = serde_json::from_str(&event.content)
+            .map_err(|e| ArenaError::InvalidRoomData(e.to_string()))?;
 
         // Check room status
         if content.status == RoomStatus::Deleted {
@@ -357,7 +361,9 @@ where
             player_pubkey: self.public_key(),
         }))?;
 
-        self.client.publish_ephemeral(&room_tag, &join_content).await?;
+        self.client
+            .publish_ephemeral(&room_tag, &join_content)
+            .await?;
 
         // Start subscription
         self.start_room_subscription(room_id).await?;
@@ -404,7 +410,9 @@ where
     pub async fn delete_room(&self) -> Result<()> {
         let state = self.room_state.read().await;
         if !state.is_host {
-            return Err(ArenaError::NotAuthorized("Only host can delete room".to_string()));
+            return Err(ArenaError::NotAuthorized(
+                "Only host can delete room".to_string(),
+            ));
         }
 
         let room_id = state.room_id.as_ref().ok_or(ArenaError::NotInRoom)?;
@@ -568,7 +576,9 @@ where
     pub async fn start_game(&self) -> Result<()> {
         let room_state = self.room_state.read().await;
         if !room_state.is_host {
-            return Err(ArenaError::NotAuthorized("Only host can start game".to_string()));
+            return Err(ArenaError::NotAuthorized(
+                "Only host can start game".to_string(),
+            ));
         }
 
         let room_id = room_state.room_id.as_ref().ok_or(ArenaError::NotInRoom)?;
@@ -610,7 +620,10 @@ where
     }
 
     /// Get room QR code as data URL
-    pub async fn get_room_qr_data_url(&self, options: Option<crate::qr::QrOptions>) -> Option<String> {
+    pub async fn get_room_qr_data_url(
+        &self,
+        options: Option<crate::qr::QrOptions>,
+    ) -> Option<String> {
         let url = self.get_room_url().await?;
         crate::qr::generate_qr_data_url(&url, &options.unwrap_or_default()).ok()
     }
@@ -656,7 +669,10 @@ where
                                     ready: false,
                                 };
 
-                                players.write().await.insert(join.player_pubkey.clone(), presence.clone());
+                                players
+                                    .write()
+                                    .await
+                                    .insert(join.player_pubkey.clone(), presence.clone());
 
                                 let _ = event_tx.send(ArenaEvent::PlayerJoin(presence)).await;
 
@@ -677,9 +693,16 @@ where
                                     p.last_seen = now_ms();
                                 }
 
-                                if let Ok(state) = serde_json::from_value::<T>(state_event.game_state) {
-                                    player_states.write().await.insert(pubkey.clone(), state.clone());
-                                    let _ = event_tx.send(ArenaEvent::PlayerState { pubkey, state }).await;
+                                if let Ok(state) =
+                                    serde_json::from_value::<T>(state_event.game_state)
+                                {
+                                    player_states
+                                        .write()
+                                        .await
+                                        .insert(pubkey.clone(), state.clone());
+                                    let _ = event_tx
+                                        .send(ArenaEvent::PlayerState { pubkey, state })
+                                        .await;
                                 }
                             }
 
@@ -701,22 +724,22 @@ where
                                 room_state.write().await.status = RoomStatus::Finished;
                             }
 
-                            EventContent::Rematch(rm) => {
-                                match rm.action {
-                                    RematchAction::Request => {
-                                        let _ = event_tx.send(ArenaEvent::RematchRequested(pubkey)).await;
-                                    }
-                                    RematchAction::Accept => {
-                                        if let Some(new_seed) = rm.new_seed {
-                                            let mut state = room_state.write().await;
-                                            state.seed = new_seed;
-                                            state.status = RoomStatus::Ready;
-                                            state.rematch_requested = false;
-                                            let _ = event_tx.send(ArenaEvent::RematchStart(new_seed)).await;
-                                        }
+                            EventContent::Rematch(rm) => match rm.action {
+                                RematchAction::Request => {
+                                    let _ =
+                                        event_tx.send(ArenaEvent::RematchRequested(pubkey)).await;
+                                }
+                                RematchAction::Accept => {
+                                    if let Some(new_seed) = rm.new_seed {
+                                        let mut state = room_state.write().await;
+                                        state.seed = new_seed;
+                                        state.status = RoomStatus::Ready;
+                                        state.rematch_requested = false;
+                                        let _ =
+                                            event_tx.send(ArenaEvent::RematchStart(new_seed)).await;
                                     }
                                 }
-                            }
+                            },
 
                             EventContent::Ready(r) => {
                                 if let Some(p) = players.write().await.get_mut(&pubkey) {
@@ -735,18 +758,28 @@ where
                                         }
                                         StartMode::Countdown => {
                                             let secs = config.countdown_seconds;
-                                            let _ = event_tx.send(ArenaEvent::CountdownStart(secs)).await;
+                                            let _ = event_tx
+                                                .send(ArenaEvent::CountdownStart(secs))
+                                                .await;
 
                                             // Spawn countdown task
                                             let event_tx_clone = event_tx.clone();
                                             let room_state_clone = room_state.clone();
                                             spawn(async move {
                                                 for remaining in (1..=secs).rev() {
-                                                    tokio::time::sleep(Duration::from_secs(1)).await;
-                                                    let _ = event_tx_clone.send(ArenaEvent::CountdownTick(remaining - 1)).await;
+                                                    tokio::time::sleep(Duration::from_secs(1))
+                                                        .await;
+                                                    let _ = event_tx_clone
+                                                        .send(ArenaEvent::CountdownTick(
+                                                            remaining - 1,
+                                                        ))
+                                                        .await;
                                                 }
-                                                room_state_clone.write().await.status = RoomStatus::Playing;
-                                                let _ = event_tx_clone.send(ArenaEvent::GameStart).await;
+                                                room_state_clone.write().await.status =
+                                                    RoomStatus::Playing;
+                                                let _ = event_tx_clone
+                                                    .send(ArenaEvent::GameStart)
+                                                    .await;
                                             });
                                         }
                                         _ => {}
@@ -785,10 +818,11 @@ where
                 let state = room_state.read().await;
                 if let Some(room_id) = &state.room_id {
                     let room_tag = create_room_tag(&config.game_id, room_id);
-                    let content = serde_json::to_string(&EventContent::Heartbeat(HeartbeatEventContent {
-                        timestamp: now_ms(),
-                    }))
-                    .unwrap();
+                    let content =
+                        serde_json::to_string(&EventContent::Heartbeat(HeartbeatEventContent {
+                            timestamp: now_ms(),
+                        }))
+                        .unwrap();
 
                     if let Err(e) = client.publish_ephemeral(&room_tag, &content).await {
                         warn!("Failed to send heartbeat: {}", e);

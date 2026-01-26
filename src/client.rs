@@ -97,17 +97,9 @@ impl NostrClient {
     }
 
     /// Publish a room event (kind 30078)
-    pub async fn publish_room(
-        &self,
-        d_tag: &str,
-        game_id: &str,
-        content: &str,
-    ) -> Result<EventId> {
+    pub async fn publish_room(&self, d_tag: &str, game_id: &str, content: &str) -> Result<EventId> {
         let builder = EventBuilder::new(Kind::Custom(kinds::ROOM), content)
-            .tags(vec![
-                Tag::identifier(d_tag),
-                Tag::hashtag(game_id),
-            ]);
+            .tags(vec![Tag::identifier(d_tag), Tag::hashtag(game_id)]);
 
         let output = self
             .client
@@ -135,11 +127,7 @@ impl NostrClient {
     }
 
     /// Fetch room events
-    pub async fn fetch_rooms(
-        &self,
-        game_id: &str,
-        limit: usize,
-    ) -> Result<Vec<Event>> {
+    pub async fn fetch_rooms(&self, game_id: &str, limit: usize) -> Result<Vec<Event>> {
         let filter = Filter::new()
             .kind(Kind::Custom(kinds::ROOM))
             .hashtag(game_id)
@@ -171,11 +159,7 @@ impl NostrClient {
     }
 
     /// Subscribe to room events
-    pub async fn subscribe_room<F>(
-        &self,
-        d_tag: &str,
-        callback: F,
-    ) -> Result<SubscriptionId>
+    pub async fn subscribe_room<F>(&self, d_tag: &str, callback: F) -> Result<SubscriptionId>
     where
         F: Fn(Event) + Send + Sync + 'static,
     {
@@ -210,9 +194,7 @@ impl NostrClient {
 
     /// Unsubscribe from a subscription
     pub async fn unsubscribe(&self, sub_id: SubscriptionId) -> Result<()> {
-        self.client
-            .unsubscribe(sub_id)
-            .await;
+        self.client.unsubscribe(sub_id).await;
         Ok(())
     }
 }

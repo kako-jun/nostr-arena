@@ -63,5 +63,5 @@ mod tests;
 pub use arena::{Arena, ArenaEvent};
 pub use client::NostrClient;
 pub use error::{ArenaError, Result};
-pub use qr::{generate_qr_data_url, generate_qr_svg, QrOptions};
+pub use qr::{QrOptions, generate_qr_data_url, generate_qr_svg};
 pub use types::*;
