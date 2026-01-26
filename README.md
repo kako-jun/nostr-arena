@@ -250,6 +250,32 @@ const dataUrl = await arena.getRoomQRDataUrl();
 | `state_throttle` | `100` | State update throttle in ms |
 | `base_url` | none | Base URL for room URLs |
 
+## API
+
+| Method | Description |
+|--------|-------------|
+| `connect()` | Connect to relays |
+| `disconnect()` | Disconnect from relays |
+| `create()` | Create a room, returns URL |
+| `join(room_id)` | Join a room |
+| `leave()` | Leave current room |
+| `reconnect(room_id)` | Reconnect to a room (e.g., after page refresh) |
+| `delete_room()` | Delete room (host only) |
+| `send_state(state)` | Send game state |
+| `send_game_over(reason, score)` | Send game over |
+| `send_ready(ready)` | Send ready signal |
+| `start_game()` | Start game (host only) |
+| `request_rematch()` | Request rematch |
+| `accept_rematch()` | Accept rematch |
+| `try_recv()` | Poll for event (non-blocking) |
+| `recv()` | Wait for event (blocking, Rust only) |
+| `players()` | Get current players |
+| `player_count()` | Get player count |
+| `get_room_url()` | Get room URL |
+| `get_room_qr_svg()` | Get QR code as SVG |
+| `get_room_qr_data_url()` | Get QR code as data URL |
+| `list_rooms()` | List available rooms (static) |
+
 ## Events
 
 | Event | Description |
@@ -267,32 +293,17 @@ const dataUrl = await arena.getRoomQRDataUrl();
 | `GameStart` | Game started |
 | `Error` | Error occurred |
 
-## Examples
+## Related Packages
 
-- **Rust TUI**: `examples/rust-tui/` - Simple terminal-based example
-- **PyGame**: `examples/pygame/` - Multiplayer game with PyGame
-- **Web**: `examples/web/` - Browser-based example
+- **Rust crate**: [nostr-arena](https://crates.io/crates/nostr-arena)
+- **npm (WASM)**: [nostr-arena-js](https://github.com/kako-jun/nostr-arena-js)
+- **PyPI**: [nostr-arena-python](https://github.com/kako-jun/nostr-arena-python)
 
 ## Building
 
-### Rust
-
 ```bash
 cargo build --release
-```
-
-### WASM (npm)
-
-```bash
-cd bindings/wasm
-wasm-pack build --target web
-```
-
-### Python
-
-```bash
-cd bindings/python
-maturin build --release
+cargo test
 ```
 
 ## License
