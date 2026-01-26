@@ -1,0 +1,23 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/nostr-arena-core",
+    "bindings/wasm",
+    "examples/rust-tui",
+]
+
+[workspace.package]
+version = "0.2.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/kako-jun/nostr-arena"
+authors = ["kako-jun <ppdg85ae99aaq2q2@gmail.com>"]
+
+[workspace.dependencies]
+nostr-arena-core = { path = "crates/nostr-arena-core" }
+nostr-sdk = "0.38"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tracing = "0.1"
