@@ -39,7 +39,7 @@ pub fn generate_qr_svg(data: &str, options: &QrOptions) -> Result<String, String
 pub fn generate_qr_data_url(data: &str, options: &QrOptions) -> Result<String, String> {
     let svg = generate_qr_svg(data, options)?;
     let encoded = base64_encode(&svg);
-    Ok(format!("data:image/svg+xml;base64,{}", encoded))
+    Ok(format!("data:image/svg+xml;base64,{encoded}"))
 }
 
 fn base64_encode(input: &str) -> String {

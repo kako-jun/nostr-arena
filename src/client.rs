@@ -115,7 +115,7 @@ impl NostrClient {
             .map_err(|e| ArenaError::Nostr(e.to_string()))?;
 
         debug!("Published room event: {}", output.id());
-        Ok(output.id().clone())
+        Ok(*output.id())
     }
 
     /// Publish an ephemeral event (kind 25000)
@@ -130,7 +130,7 @@ impl NostrClient {
             .map_err(|e| ArenaError::Nostr(e.to_string()))?;
 
         debug!("Published ephemeral event");
-        Ok(output.id().clone())
+        Ok(*output.id())
     }
 
     /// Fetch room events

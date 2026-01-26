@@ -170,7 +170,7 @@ where
                     .find_map(|tag| {
                         if tag.kind() == nostr_sdk::TagKind::SingleLetter(nostr_sdk::SingleLetterTag::lowercase(nostr_sdk::Alphabet::D)) {
                             tag.content().map(|s| {
-                                s.strip_prefix(&format!("{}-", game_id))
+                                s.strip_prefix(&format!("{game_id}-"))
                                     .unwrap_or(s)
                                     .to_string()
                             })
@@ -275,9 +275,9 @@ where
 
         // Generate room URL
         let url = if let Some(base) = &self.config.base_url {
-            format!("{}/battle/{}", base, room_id)
+            format!("{base}/battle/{room_id}")
         } else {
-            format!("/battle/{}", room_id)
+            format!("/battle/{room_id}")
         };
 
         info!("Created room: {}", room_id);
@@ -596,9 +596,9 @@ where
         let room_id = state.room_id.as_ref()?;
 
         if let Some(base) = &self.config.base_url {
-            Some(format!("{}/battle/{}", base, room_id))
+            Some(format!("{base}/battle/{room_id}"))
         } else {
-            Some(format!("/battle/{}", room_id))
+            Some(format!("/battle/{room_id}"))
         }
     }
 

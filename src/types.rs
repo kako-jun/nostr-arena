@@ -265,7 +265,7 @@ pub struct GameStartEventContent {}
 
 /// Generate room tag from game ID and room ID
 pub fn create_room_tag(game_id: &str, room_id: &str) -> String {
-    format!("{}-{}", game_id, room_id)
+    format!("{game_id}-{room_id}")
 }
 
 /// Generate a random seed
