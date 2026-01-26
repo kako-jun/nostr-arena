@@ -1,11 +1,13 @@
 //! QR code generation utilities
 
+use qrcode::{QrCode, render::svg};
+
 /// QR code options
 #[derive(Debug, Clone, Default)]
 pub struct QrOptions {
-    /// Size/scale factor
+    /// Size/scale factor (pixels per module)
     pub size: Option<u32>,
-    /// Margin (quiet zone)
+    /// Margin (quiet zone in modules)
     pub margin: Option<u32>,
     /// Foreground color (hex)
     pub fg_color: Option<String>,
@@ -15,25 +17,22 @@ pub struct QrOptions {
 
 /// Generate QR code as SVG string
 pub fn generate_qr_svg(data: &str, options: &QrOptions) -> Result<String, String> {
-    let size = options.size.unwrap_or(200);
-    let margin = options.margin.unwrap_or(4);
+    let code = QrCode::new(data.as_bytes()).map_err(|e| e.to_string())?;
+
+    let size = options.size.unwrap_or(4);
+    let margin = options.margin.unwrap_or(2);
     let fg = options.fg_color.as_deref().unwrap_or("#000000");
     let bg = options.bg_color.as_deref().unwrap_or("#ffffff");
 
-    // Placeholder SVG - real implementation would use qrcode crate
-    Ok(format!(
-        r#"<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 {size} {size}">
-  <rect width="100%" height="100%" fill="{bg}"/>
-  <rect x="{margin}" y="{margin}" width="{w}" height="{w}" fill="{fg}" rx="4"/>
-  <text x="50%" y="50%" fill="{bg}" text-anchor="middle" dominant-baseline="middle" font-size="10" font-family="monospace">{data}</text>
-</svg>"#,
-        size = size,
-        margin = margin,
-        w = size - margin * 2,
-        fg = fg,
-        bg = bg,
-        data = if data.len() > 30 { &data[..30] } else { data }
-    ))
+    let svg = code
+        .render::<svg::Color>()
+        .min_dimensions(size * 10, size * 10)
+        .quiet_zone(margin > 0)
+        .dark_color(svg::Color(fg))
+        .light_color(svg::Color(bg))
+        .build();
+
+    Ok(svg)
 }
 
 /// Generate QR code as data URL
@@ -83,11 +82,24 @@ mod tests {
         let svg = generate_qr_svg("https://example.com", &QrOptions::default()).unwrap();
         assert!(svg.contains("<svg"));
         assert!(svg.contains("</svg>"));
+        assert!(svg.contains("<path")); // Real QR code has path elements
     }
 
     #[test]
     fn test_generate_qr_data_url() {
         let url = generate_qr_data_url("test", &QrOptions::default()).unwrap();
         assert!(url.starts_with("data:image/svg+xml;base64,"));
+    }
+
+    #[test]
+    fn test_qr_with_options() {
+        let options = QrOptions {
+            size: Some(8),
+            margin: Some(4),
+            fg_color: Some("#333333".to_string()),
+            bg_color: Some("#ffffff".to_string()),
+        };
+        let svg = generate_qr_svg("https://example.com/room/abc123", &options).unwrap();
+        assert!(svg.contains("#333333"));
     }
 }

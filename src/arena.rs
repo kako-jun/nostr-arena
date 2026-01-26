@@ -432,6 +432,18 @@ where
         Ok(())
     }
 
+    /// Reconnect to a room (e.g., after page refresh or connection drop)
+    pub async fn reconnect(&self, room_id: &str) -> Result<()> {
+        // First, leave any current room cleanly
+        self.leave().await?;
+
+        // Then join the specified room
+        self.join(room_id).await?;
+
+        info!("Reconnected to room: {}", room_id);
+        Ok(())
+    }
+
     // =========================================================================
     // Game State
     // =========================================================================
@@ -724,10 +736,17 @@ where
                                             let secs = config.countdown_seconds;
                                             let _ = event_tx.send(ArenaEvent::CountdownStart(secs)).await;
 
-                                            // Countdown logic would go here
-                                            // For now, just start immediately
-                                            room_state.write().await.status = RoomStatus::Playing;
-                                            let _ = event_tx.send(ArenaEvent::GameStart).await;
+                                            // Spawn countdown task
+                                            let event_tx_clone = event_tx.clone();
+                                            let room_state_clone = room_state.clone();
+                                            tokio::spawn(async move {
+                                                for remaining in (1..=secs).rev() {
+                                                    tokio::time::sleep(Duration::from_secs(1)).await;
+                                                    let _ = event_tx_clone.send(ArenaEvent::CountdownTick(remaining - 1)).await;
+                                                }
+                                                room_state_clone.write().await.status = RoomStatus::Playing;
+                                                let _ = event_tx_clone.send(ArenaEvent::GameStart).await;
+                                            });
                                         }
                                         _ => {}
                                     }
