@@ -22,7 +22,7 @@
          ▼                 ▼                 ▼
 ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
 │ nostr-arena-js  │ │nostr-arena-py   │ │  Native Rust    │
-│ (wasm-bindgen)  │ │    (PyO3)       │ │     Apps        │
+│   (NAPI-RS)     │ │    (PyO3)       │ │     Apps        │
 └─────────────────┘ └─────────────────┘ └─────────────────┘
          │                 │                 │
          ▼                 ▼                 ▼
@@ -54,13 +54,13 @@ The core library written in Rust. Provides:
 
 ### nostr-arena-js
 
-WebAssembly bindings built with wasm-bindgen. Exports:
+Native Node.js bindings built with NAPI-RS. Exports:
 
 - `Arena` class
-- `ArenaConfig` class
+- `listRooms()` function
 - Event types
 
-Built with `wasm-pack` for npm distribution.
+Built with `napi-rs` for npm distribution. Runs as native code (not WebAssembly).
 
 ### nostr-arena-python
 
@@ -261,6 +261,9 @@ nostr-arena/
 ```
 nostr-arena-js/
 ├── Cargo.toml
+├── package.json
+├── package-lock.json
+├── build.rs
 ├── README.md
 ├── LICENSE
 ├── .pre-commit-config.yaml
@@ -269,7 +272,7 @@ nostr-arena-js/
 │       ├── ci.yml
 │       └── release.yml
 └── src/
-    └── lib.rs        # WASM bindings
+    └── lib.rs        # NAPI-RS bindings
 ```
 
 ### nostr-arena-python (PyPI)
@@ -290,4 +293,47 @@ nostr-arena-python/
 └── python/
     └── nostr_arena/
         └── __init__.py
+```
+
+## Build Limitations
+
+### Supported Platforms
+
+| Platform | nostr-arena-js | nostr-arena-python |
+|----------|----------------|-------------------|
+| Linux x86_64 | ✅ | ✅ |
+| Linux ARM64 | ❌ | ❌ |
+| macOS x86_64 | ✅ | ✅ |
+| macOS ARM64 | ✅ | ✅ |
+| Windows x86_64 | ✅ | ✅ |
+
+### ARM Linux Cross-Compilation Issue
+
+The `ring` crate (used by `nostr-sdk` for TLS/cryptography) cannot be cross-compiled for ARM Linux from x86 machines. This is because `ring` uses hand-written assembly code that requires proper ARM toolchain configuration.
+
+**Error message:**
+```
+#error "ARM assembler must define __ARM_ARCH"
+```
+
+**Why it happens:**
+- `ring` contains optimized assembly for cryptographic operations
+- Cross-compiling from x86 to ARM requires the ARM assembler to define `__ARM_ARCH`
+- GitHub Actions x86 runners don't have properly configured ARM cross-compilation toolchains for `ring`
+
+**Why macOS ARM works:**
+- `macos-latest` GitHub runner is native ARM hardware
+- No cross-compilation needed; builds natively
+
+**Workarounds:**
+1. Use native ARM runners (GitHub Actions ARM runners are available but limited)
+2. Wait for `nostr-sdk` to support alternative TLS backends (e.g., `rustls` without `ring`)
+3. Build on actual ARM hardware
+
+**Dependency chain:**
+```
+nostr-arena
+    └── nostr-sdk
+            └── reqwest (TLS)
+                    └── ring  ← Problem here
 ```
