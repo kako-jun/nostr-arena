@@ -158,10 +158,10 @@ where
                 }
 
                 // Apply status filter
-                if let Some(filter) = status_filter {
-                    if content.status != filter {
-                        continue;
-                    }
+                if let Some(filter) = status_filter
+                    && content.status != filter
+                {
+                    continue;
                 }
 
                 // Extract room_id from d tag
@@ -313,10 +313,10 @@ where
         }
 
         // Check expiry
-        if let Some(expires_at) = content.expires_at {
-            if now_ms() > expires_at {
-                return Err(ArenaError::RoomExpired);
-            }
+        if let Some(expires_at) = content.expires_at
+            && now_ms() > expires_at
+        {
+            return Err(ArenaError::RoomExpired);
         }
 
         // Check player count

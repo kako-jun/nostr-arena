@@ -11,9 +11,10 @@ pub mod kinds {
 }
 
 /// Room status
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum RoomStatus {
+    #[default]
     Idle,
     Creating,
     Waiting,
@@ -22,12 +23,6 @@ pub enum RoomStatus {
     Playing,
     Finished,
     Deleted,
-}
-
-impl Default for RoomStatus {
-    fn default() -> Self {
-        Self::Idle
-    }
 }
 
 /// Start mode for game initiation
